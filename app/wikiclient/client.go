@@ -59,10 +59,7 @@ func (c *WikiClient) CsrfTokenQuery() string {
 }
 
 func (c *WikiClient) Login(username string, password string) {
-	fmt.Println("Fetching login token")
 	loginToken := c.LoginTokenQuery()
-
-	fmt.Printf(`Login token: %s\n`, loginToken)
 
 	resp, err := c.client.R().SetFormData(map[string]string{
 		"action":     "login",
@@ -77,7 +74,34 @@ func (c *WikiClient) Login(username string, password string) {
 		os.Exit(1)
 	}
 
-	c.auth = resp.Cookies()
+	if resp.StatusCode() == 200 {
+		fmt.Println("login successful")
+		c.auth = resp.Cookies()
+	} else {
+		fmt.Println("login failed, exiting...")
+		os.Exit(1)
+	}
+}
+
+func (c *WikiClient) Logout() {
+	csrfToken := c.CsrfTokenQuery()
+
+	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
+		"action": "logout",
+		"token":  csrfToken,
+		"format": "json",
+	}).Post(c.endpoint)
+
+	if err != nil {
+		spew.Dump(err)
+		os.Exit(1)
+	}
+
+	if resp.StatusCode() == 200 {
+		fmt.Println("logout successful")
+	} else {
+		fmt.Println("logout failed")
+	}
 }
 
 func (c *WikiClient) LoginTokenQuery() string {

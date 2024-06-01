@@ -10,7 +10,7 @@ func main() {
 	client := wikiclient.New("http://localhost:8080/api.php")
 
 	client.Login("user", "pass")
-	token := client.CsrfTokenQuery()
+	defer client.Logout()
 
-	fmt.Printf(`CsrfToken: %s`, token)
+	fmt.Printf("CsrfToken: %s\n", client.CsrfTokenQuery())
 }
