@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/authordata"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/letterdata"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/pagedata"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/wikiclient"
 	"github.com/joho/godotenv"
 )
@@ -21,11 +21,11 @@ func main() {
 	input := "../data/letters"
 
 	author_dirs := getDirs(input)
-	var authors []authordata.Author
+	var authors []*authordata.Author
 	for _, author_dir := range author_dirs {
 		letter_dirs := getDirs(author_dir)
 
-		var letters []letterdata.Letter
+		var letters []*letterdata.Letter
 		for _, letter_dir := range letter_dirs {
 			letter := letterdata.New(letter_dir)
 			letters = append(letters, letter)
@@ -35,7 +35,11 @@ func main() {
 		authors = append(authors, author)
 	}
 
-	spew.Dump(authors)
+	pages := pagedata.CreatePages(authors)
+
+	for _, page := range pages {
+		client.Edit(page.Title, page.Text)
+	}
 }
 
 func loadEnv() (string, string, string) {

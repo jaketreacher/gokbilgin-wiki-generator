@@ -18,7 +18,7 @@ type Letter struct {
 	Directory string `yaml:"-"`
 }
 
-func New(directory string) Letter {
+func New(directory string) *Letter {
 	letter := parseYaml(directory)
 	text := readTranslations(directory)
 
@@ -28,7 +28,7 @@ func New(directory string) Letter {
 	return letter
 }
 
-func parseYaml(root string) Letter {
+func parseYaml(root string) *Letter {
 	path := filepath.Join(root, "letter.yaml")
 	content, err := os.ReadFile(path)
 
@@ -43,7 +43,7 @@ func parseYaml(root string) Letter {
 		log.Fatalf("%+v", err)
 	}
 
-	return letter
+	return &letter
 }
 
 func readTranslations(root string) string {
