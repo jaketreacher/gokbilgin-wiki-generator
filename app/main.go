@@ -12,5 +12,5 @@ func main() {
 	client.Login("user", "pass")
 	defer client.Logout()
 
-	fmt.Printf("CsrfToken: %s\n", client.CsrfTokenQuery())
+	fmt.Printf("CsrfToken: %s\n", client.TokenQuery(wikiclient.Token_CSRF))
 }

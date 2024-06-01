@@ -9,6 +9,13 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
+type TokenType string
+
+const (
+	Token_CSRF  TokenType = "csrf"
+	Token_Login TokenType = "login"
+)
+
 type WikiClient struct {
 	client   *resty.Client
 	endpoint string
@@ -24,42 +31,49 @@ func New(endpoint string) *WikiClient {
 	}
 }
 
-type CsrfTokenQueryResponse struct {
+type TokenQueryResponse struct {
 	Query struct {
 		Tokens struct {
-			CsrfToken string
-		}
-	}
-}
-
-type LoginTokenQueryResponse struct {
-	Query struct {
-		Tokens struct {
+			CsrfToken  string
 			LoginToken string
 		}
 	}
 }
 
-func (c *WikiClient) CsrfTokenQuery() string {
-	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
+func (c *WikiClient) TokenQuery(token TokenType) string {
+	req := c.client.R()
+	if token != Token_Login {
+		req = req.SetCookies(c.auth)
+	}
+	resp, err := req.SetFormData(map[string]string{
 		"action": "query",
 		"meta":   "tokens",
-		"type":   "csrf",
+		"type":   string(token),
 		"format": "json",
-	}).SetResult(CsrfTokenQueryResponse{}).Post(c.endpoint)
+	}).SetResult(TokenQueryResponse{}).Post(c.endpoint)
 
 	if err != nil {
 		spew.Dump(err)
 		os.Exit(1)
 	}
 
-	result := resp.Result().(*CsrfTokenQueryResponse)
+	result := resp.Result().(*TokenQueryResponse)
 
-	return result.Query.Tokens.CsrfToken
+	switch token {
+	case Token_CSRF:
+		return result.Query.Tokens.CsrfToken
+	case Token_Login:
+		return result.Query.Tokens.LoginToken
+	default:
+		fmt.Println("Bad TokenQuery request")
+		os.Exit(1)
+	}
+
+	return ""
 }
 
 func (c *WikiClient) Login(username string, password string) {
-	loginToken := c.LoginTokenQuery()
+	loginToken := c.TokenQuery(Token_Login)
 
 	resp, err := c.client.R().SetFormData(map[string]string{
 		"action":     "login",
@@ -84,7 +98,7 @@ func (c *WikiClient) Login(username string, password string) {
 }
 
 func (c *WikiClient) Logout() {
-	csrfToken := c.CsrfTokenQuery()
+	csrfToken := c.TokenQuery(Token_CSRF)
 
 	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
 		"action": "logout",
@@ -102,22 +116,4 @@ func (c *WikiClient) Logout() {
 	} else {
 		fmt.Println("logout failed")
 	}
-}
-
-func (c *WikiClient) LoginTokenQuery() string {
-	resp, err := c.client.R().SetFormData(map[string]string{
-		"action": "query",
-		"meta":   "tokens",
-		"type":   "login",
-		"format": "json",
-	}).SetResult(LoginTokenQueryResponse{}).Post(c.endpoint)
-
-	if err != nil {
-		spew.Dump(err)
-		os.Exit(1)
-	}
-
-	result := resp.Result().(*LoginTokenQueryResponse)
-
-	return result.Query.Tokens.LoginToken
 }
