@@ -120,3 +120,22 @@ func (c *WikiClient) Logout() {
 		fmt.Println("logout failed")
 	}
 }
+
+func (c *WikiClient) Edit(title string, text string) {
+	csrfToken := c.TokenQuery(TOKEN.CSRF)
+
+	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
+		"action": "edit",
+		"title":  title,
+		"text":   text,
+		"token":  csrfToken,
+		"format": "json",
+	}).Post(c.endpoint)
+
+	if err != nil {
+		spew.Dump(err)
+		os.Exit(1)
+	}
+
+	spew.Dump(resp)
+}
