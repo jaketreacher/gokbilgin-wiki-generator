@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/otiai10/gosseract/v2"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/wikiclient"
 )
 
 func main() {
-	client := gosseract.NewClient()
-	client.SetLanguage("tur")
-	defer client.Close()
-	client.SetImage("/data/input.jpg")
-	text, _ := client.Text()
-	fmt.Println(text)
+	client := wikiclient.New("http://localhost:8080/api.php")
+
+	token := client.TokenQuery()
+
+	fmt.Println(token)
 }
