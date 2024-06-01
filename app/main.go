@@ -9,7 +9,8 @@ import (
 func main() {
 	client := wikiclient.New("http://localhost:8080/api.php")
 
-	token := client.TokenQuery()
+	client.Login("user", "pass")
+	token := client.CsrfTokenQuery()
 
-	fmt.Println(token)
+	fmt.Printf(`CsrfToken: %s`, token)
 }
