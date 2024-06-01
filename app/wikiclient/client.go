@@ -2,6 +2,7 @@ package wikiclient
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -43,6 +44,22 @@ type TokenQueryResponse struct {
 	}
 }
 
+func (c *WikiClient) UserInfoQuery() {
+	resp, err := c.client.R().SetFormData(map[string]string{
+		"action": "query",
+		"meta":   "userinfo",
+		"uiprop": "groups|rights|ratelimits|theoreticalratelimits",
+		"format": "json",
+	}).Post(c.endpoint)
+
+	if err != nil {
+		spew.Dump(err)
+		os.Exit(1)
+	}
+
+	spew.Dump(resp)
+}
+
 func (c *WikiClient) TokenQuery(token TokenType) string {
 	req := c.client.R()
 	if token != TOKEN.Login {
@@ -75,6 +92,13 @@ func (c *WikiClient) TokenQuery(token TokenType) string {
 	return ""
 }
 
+type LoginResponse struct {
+	Login struct {
+		Result string
+		Reason string
+	}
+}
+
 func (c *WikiClient) Login(username string, password string) {
 	loginToken := c.TokenQuery(TOKEN.Login)
 
@@ -84,19 +108,21 @@ func (c *WikiClient) Login(username string, password string) {
 		"lgpassword": password,
 		"lgtoken":    loginToken,
 		"format":     "json",
-	}).Post(c.endpoint)
+	}).SetResult(LoginResponse{}).Post(c.endpoint)
 
 	if err != nil {
 		spew.Dump(err)
 		os.Exit(1)
 	}
 
-	if resp.StatusCode() == 200 {
+	result := resp.Result().(*LoginResponse)
+
+	spew.Dump(resp)
+	if result.Login.Result == "Success" {
 		fmt.Println("login successful")
 		c.auth = resp.Cookies()
 	} else {
-		fmt.Println("login failed, exiting...")
-		os.Exit(1)
+		log.Fatalln("login failed, exiting...")
 	}
 }
 
@@ -129,7 +155,9 @@ func (c *WikiClient) Edit(title string, text string) {
 		"title":  title,
 		"text":   text,
 		"token":  csrfToken,
+		"bot":    "true", // Mark edit as a bot edit
 		"format": "json",
+		"assert": "bot",
 	}).Post(c.endpoint)
 
 	if err != nil {

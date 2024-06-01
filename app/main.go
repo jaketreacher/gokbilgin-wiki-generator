@@ -49,8 +49,8 @@ func loadEnv() (string, string, string) {
 		log.Fatalf("%+v", err)
 	}
 
-	username := os.Getenv("USER")
-	password := os.Getenv("PASS")
+	username := os.Getenv("USERNAME")
+	password := os.Getenv("PASSWORD")
 	endpoint := os.Getenv("ENDPOINT")
 
 	return username, password, endpoint
