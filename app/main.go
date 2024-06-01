@@ -18,6 +18,7 @@ func main() {
 	client.Login(username, password)
 	defer client.Logout()
 
+	client.UserInfoQuery()
 	input := "../data/letters"
 
 	author_dirs := getDirs(input)

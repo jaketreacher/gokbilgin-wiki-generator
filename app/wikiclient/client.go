@@ -157,7 +157,6 @@ func (c *WikiClient) Edit(title string, text string) {
 		"token":  csrfToken,
 		"bot":    "true", // Mark edit as a bot edit
 		"format": "json",
-		"assert": "bot",
 	}).Post(c.endpoint)
 
 	if err != nil {
