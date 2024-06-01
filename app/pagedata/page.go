@@ -2,12 +2,13 @@ package pagedata
 
 import (
 	"fmt"
-	"slices"
 	"sort"
 	"strings"
 
 	"github.com/jaketreacher/gokbilgin-wiki-generator/authordata"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/letterdata"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
 )
 
 type Page struct {
@@ -24,6 +25,7 @@ func CreatePages(authors []*authordata.Author) []*Page {
 	var letterPages []*Page
 	var authorPages []*Page
 
+	authorPageMap := make(map[*authordata.Author]*Page)
 	for _, author := range authors {
 		letterPageMap := make(map[*letterdata.Letter]*Page)
 		for _, letter := range author.Letters {
@@ -35,9 +37,10 @@ func CreatePages(authors []*authordata.Author) []*Page {
 
 		page := createAuthorPage(author, letterPageMap)
 		authorPages = append(authorPages, page)
+		authorPageMap[author] = page
 	}
 
-	page := createCorrespondencePage(authorPages)
+	page := createCorrespondencePage(authorPageMap)
 
 	var allPages []*Page
 	allPages = append(allPages, page)
@@ -47,13 +50,21 @@ func CreatePages(authors []*authordata.Author) []*Page {
 	return allPages
 }
 
-func createCorrespondencePage(authorPages []*Page) *Page {
+func createCorrespondencePage(authorPageMap map[*authordata.Author]*Page) *Page {
+	authors := make([]*authordata.Author, 0, len(authorPageMap))
+	for key := range authorPageMap {
+		authors = append(authors, key)
+	}
+	sort.Slice(authors, func(i, j int) bool {
+		collator := collate.New(language.Turkish)
+		return collator.CompareString(authors[i].SortKey, authors[j].SortKey) < 0
+	})
+
 	var authorLinks []string
-	for _, page := range authorPages {
+	for _, author := range authors {
+		page := authorPageMap[author]
 		authorLinks = append(authorLinks, createInternalLink(page.Title))
 	}
-
-	slices.Sort(authorLinks)
 
 	text := strings.Join(authorLinks, "\n\n")
 
