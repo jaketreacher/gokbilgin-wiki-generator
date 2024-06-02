@@ -20,6 +20,10 @@ fi
 
 pdfimages -all "$TARGET" $PDF_IMAGES_DIR/out
 
+if [ -f $TESSERACT_OUTPUT ]; then
+    rm $TESSERACT_OUTPUT
+fi
+
 for i in $PDF_IMAGES_DIR/*; do
     tesseract -l tur $i stdout >> $TESSERACT_OUTPUT
 done
