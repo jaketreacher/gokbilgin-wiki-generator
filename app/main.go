@@ -13,13 +13,19 @@ import (
 )
 
 func main() {
+	input := os.Args[1]
+
+	info, err := os.Stat(input)
+	if os.IsNotExist(err) || !info.IsDir() {
+		log.Fatalf("%v is invalid", input)
+	}
+
 	username, password, endpoint := loadEnv()
 	client := wikiclient.New(endpoint)
 	client.Login(username, password)
 	defer client.Logout()
 
 	client.UserInfoQuery()
-	input := "../data/letters"
 
 	authorDirs := getDirs(input)
 	var authors []*author.Author
