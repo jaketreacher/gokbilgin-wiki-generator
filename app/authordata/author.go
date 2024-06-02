@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jaketreacher/gokbilgin-wiki-generator/letterdata"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/turkishsuffix"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,7 +24,7 @@ func New(directory string, letters []*letterdata.Letter) *Author {
 	author := parseYaml(directory)
 
 	author.SortKey = createSortKey(author.Name)
-	author.Ablative = createAblative(author.Name)
+	author.Ablative, _ = turkishsuffix.Ablative(author.Name)
 	author.Letters = letters
 	author.Directory = directory
 
@@ -47,10 +48,6 @@ func removePrefix(name string) string {
 	} else {
 		return parts[len(parts)-1]
 	}
-}
-
-func createAblative(name string) string {
-	return name + "'dan"
 }
 
 func parseYaml(root string) *Author {
