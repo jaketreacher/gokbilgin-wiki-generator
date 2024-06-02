@@ -74,22 +74,26 @@ func (c *WikiClient) TokenQuery(token TokenType) string {
 
 	if err != nil {
 		spew.Dump(err)
-		os.Exit(1)
+		log.Fatalln("tokenquery error")
 	}
 
 	result := resp.Result().(*TokenQueryResponse)
 
+	var value string
 	switch token {
 	case Token.Csrf:
-		return result.Query.Tokens.CsrfToken
+		value = result.Query.Tokens.CsrfToken
 	case Token.Login:
-		return result.Query.Tokens.LoginToken
+		value = result.Query.Tokens.LoginToken
 	default:
-		fmt.Println("Bad TokenQuery request")
-		os.Exit(1)
+		log.Fatalln("bad TokenQuery response")
 	}
 
-	return ""
+	if value == "" {
+		log.Fatalf("empty %s response", token)
+	}
+
+	return value
 }
 
 type LoginResponse struct {
@@ -112,7 +116,7 @@ func (c *WikiClient) Login(username string, password string) {
 
 	if err != nil {
 		spew.Dump(err)
-		os.Exit(1)
+		log.Fatalln("login error, exiting...")
 	}
 
 	result := resp.Result().(*LoginResponse)
