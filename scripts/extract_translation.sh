@@ -21,11 +21,13 @@ fi
 WORKDIR=$(dirname "$TARGET")
 cd "$WORKDIR"
 
-if [ ! -d "$PDF_IMAGES_DIR" ]; then
-    mkdir $PDF_IMAGES_DIR
+FILENAME=$(basename "$TARGET")
+if [ -d "$PDF_IMAGES_DIR" ]; then
+    rm -rf $PDF_IMAGES_DIR
 fi
+mkdir $PDF_IMAGES_DIR
 
-pdfimages -all "$TARGET" $PDF_IMAGES_DIR/out
+pdfimages -all "$FILENAME" $PDF_IMAGES_DIR/out
 
 if [ -f $TESSERACT_OUTPUT ]; then
     rm $TESSERACT_OUTPUT
