@@ -1,12 +1,12 @@
-package pagedata
+package page
 
 import (
 	"fmt"
 	"sort"
 	"strings"
 
-	"github.com/jaketreacher/gokbilgin-wiki-generator/authordata"
-	"github.com/jaketreacher/gokbilgin-wiki-generator/letterdata"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/author"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/letter"
 	"golang.org/x/text/collate"
 	"golang.org/x/text/language"
 )
@@ -21,13 +21,13 @@ type LetterSection struct {
 	Content string
 }
 
-func CreatePages(authors []*authordata.Author) []*Page {
+func CreatePages(authors []*author.Author) []*Page {
 	var letterPages []*Page
 	var authorPages []*Page
 
-	authorPageMap := make(map[*authordata.Author]*Page)
+	authorPageMap := make(map[*author.Author]*Page)
 	for _, author := range authors {
-		letterPageMap := make(map[*letterdata.Letter]*Page)
+		letterPageMap := make(map[*letter.Letter]*Page)
 		for _, letter := range author.Letters {
 			page := createLetterPage(letter, author)
 
@@ -50,8 +50,8 @@ func CreatePages(authors []*authordata.Author) []*Page {
 	return allPages
 }
 
-func createCorrespondencePage(authorPageMap map[*authordata.Author]*Page) *Page {
-	authors := make([]*authordata.Author, 0, len(authorPageMap))
+func createCorrespondencePage(authorPageMap map[*author.Author]*Page) *Page {
+	authors := make([]*author.Author, 0, len(authorPageMap))
 	for key := range authorPageMap {
 		authors = append(authors, key)
 	}
@@ -74,7 +74,7 @@ func createCorrespondencePage(authorPageMap map[*authordata.Author]*Page) *Page 
 	}
 }
 
-func createAuthorPage(author *authordata.Author, letterPageMap map[*letterdata.Letter]*Page) *Page {
+func createAuthorPage(author *author.Author, letterPageMap map[*letter.Letter]*Page) *Page {
 	title := fmt.Sprintf("M. Tayyib Gökbilgin'e %s Mektuplar", author.Ablative)
 
 	var letterSections []*LetterSection
@@ -100,7 +100,7 @@ func createAuthorPage(author *authordata.Author, letterPageMap map[*letterdata.L
 	}
 }
 
-func createLetterPage(letter *letterdata.Letter, author *authordata.Author) *Page {
+func createLetterPage(letter *letter.Letter, author *author.Author) *Page {
 	title := fmt.Sprintf("%s %s Tarihli Mektup", author.Ablative, letter.Date)
 
 	var downloadLinks []string

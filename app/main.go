@@ -5,10 +5,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jaketreacher/gokbilgin-wiki-generator/authordata"
-	"github.com/jaketreacher/gokbilgin-wiki-generator/letterdata"
-	"github.com/jaketreacher/gokbilgin-wiki-generator/pagedata"
-	"github.com/jaketreacher/gokbilgin-wiki-generator/wikiclient"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/author"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/letter"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/page"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/wikiclient"
 	"github.com/joho/godotenv"
 )
 
@@ -21,22 +21,22 @@ func main() {
 	client.UserInfoQuery()
 	input := "../data/letters"
 
-	author_dirs := getDirs(input)
-	var authors []*authordata.Author
-	for _, author_dir := range author_dirs {
-		letter_dirs := getDirs(author_dir)
+	authorDirs := getDirs(input)
+	var authors []*author.Author
+	for _, authorDir := range authorDirs {
+		lettersDir := getDirs(authorDir)
 
-		var letters []*letterdata.Letter
-		for _, letter_dir := range letter_dirs {
-			letter := letterdata.New(letter_dir)
+		var letters []*letter.Letter
+		for _, letter_dir := range lettersDir {
+			letter := letter.New(letter_dir)
 			letters = append(letters, letter)
 		}
 
-		author := authordata.New(author_dir, letters)
+		author := author.New(authorDir, letters)
 		authors = append(authors, author)
 	}
 
-	pages := pagedata.CreatePages(authors)
+	pages := page.CreatePages(authors)
 
 	for _, page := range pages {
 		client.Edit(page.Title, page.Text)

@@ -12,11 +12,11 @@ import (
 
 type TokenType string
 
-var TOKEN = struct {
-	CSRF  TokenType
+var Token = struct {
+	Csrf  TokenType
 	Login TokenType
 }{
-	CSRF:  "csrf",
+	Csrf:  "csrf",
 	Login: "login",
 }
 
@@ -62,7 +62,7 @@ func (c *WikiClient) UserInfoQuery() {
 
 func (c *WikiClient) TokenQuery(token TokenType) string {
 	req := c.client.R()
-	if token != TOKEN.Login {
+	if token != Token.Login {
 		req = req.SetCookies(c.auth)
 	}
 	resp, err := req.SetFormData(map[string]string{
@@ -80,9 +80,9 @@ func (c *WikiClient) TokenQuery(token TokenType) string {
 	result := resp.Result().(*TokenQueryResponse)
 
 	switch token {
-	case TOKEN.CSRF:
+	case Token.Csrf:
 		return result.Query.Tokens.CsrfToken
-	case TOKEN.Login:
+	case Token.Login:
 		return result.Query.Tokens.LoginToken
 	default:
 		fmt.Println("Bad TokenQuery request")
@@ -100,7 +100,7 @@ type LoginResponse struct {
 }
 
 func (c *WikiClient) Login(username string, password string) {
-	loginToken := c.TokenQuery(TOKEN.Login)
+	loginToken := c.TokenQuery(Token.Login)
 
 	resp, err := c.client.R().SetFormData(map[string]string{
 		"action":     "login",
@@ -127,7 +127,7 @@ func (c *WikiClient) Login(username string, password string) {
 }
 
 func (c *WikiClient) Logout() {
-	csrfToken := c.TokenQuery(TOKEN.CSRF)
+	csrfToken := c.TokenQuery(Token.Csrf)
 
 	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
 		"action": "logout",
@@ -148,7 +148,7 @@ func (c *WikiClient) Logout() {
 }
 
 func (c *WikiClient) Edit(title string, text string) {
-	csrfToken := c.TokenQuery(TOKEN.CSRF)
+	csrfToken := c.TokenQuery(Token.Csrf)
 
 	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
 		"action": "edit",

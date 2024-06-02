@@ -1,4 +1,4 @@
-package authordata
+package author
 
 import (
 	"log"
@@ -6,21 +6,21 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jaketreacher/gokbilgin-wiki-generator/letterdata"
-	"github.com/jaketreacher/gokbilgin-wiki-generator/turkishsuffix"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/letter"
+	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/turkishsuffix"
 	"gopkg.in/yaml.v3"
 )
 
 type Author struct {
-	Name      string               `yaml:"name"`
-	Tags      []string             `yaml:"tags"`
-	SortKey   string               `yaml:"-"`
-	Ablative  string               `yaml:"-"`
-	Letters   []*letterdata.Letter `yaml:"-"`
-	Directory string               `yaml:"-"`
+	Name      string           `yaml:"name"`
+	Tags      []string         `yaml:"tags"`
+	SortKey   string           `yaml:"-"`
+	Ablative  string           `yaml:"-"`
+	Letters   []*letter.Letter `yaml:"-"`
+	Directory string           `yaml:"-"`
 }
 
-func New(directory string, letters []*letterdata.Letter) *Author {
+func New(directory string, letters []*letter.Letter) *Author {
 	author := parseYaml(directory)
 
 	author.SortKey = createSortKey(author.Name)
