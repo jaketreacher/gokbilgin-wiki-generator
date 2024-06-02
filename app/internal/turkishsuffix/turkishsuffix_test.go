@@ -10,7 +10,7 @@ func TestAblative(t *testing.T) {
 		expected string
 	}{
 		{"Nejat Göyünç", "Nejat Göyünç'ten"},
-		{"Halil Inalcik", "Halil Inalcik'ten"},
+		{"Halil İnalcık", "Halil İnalcık'tan"},
 		{"Helmuth Scheel", "Helmuth Scheel'den"},
 		{"Berberian Hrant", "Berberian Hrant'tan"},
 		{"Pertev Boratav", "Pertev Boratav'dan"},
