@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#--------------------------------------------------------
+# Input: original.pdf filepath
+# Requirements:
+#    - Directory is in the correct format: YYYY.MM.dd
+# This will generate a letter.yaml file.
+#--------------------------------------------------------
+
 set -ex
 
 TARGET="$1"

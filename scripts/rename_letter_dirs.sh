@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#--------------------------------------------------------
+# Input: author directory
+# This will rename the letter directories by extracting
+# the date from the directory name and discarding the
+# rest.
+#--------------------------------------------------------
+
 set -ex
 
 AUTHOR_DIRECTORY=$1

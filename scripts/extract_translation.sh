@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#--------------------------------------------------------
+# Input: tercume.pdf filepath
+# This will extract images from the pdf and use tesseract
+# to extract the text from the images. A single txt file
+# will be created with the complete translation.
+#--------------------------------------------------------
+
 set -ex
 
 PDF_IMAGES_DIR="pdfimages"
