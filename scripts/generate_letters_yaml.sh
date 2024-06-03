@@ -11,7 +11,7 @@ set -ex
 
 TARGET="$1"
 YAML_FILE=letter.yaml
-DOWNLOAD_BASE="https://gokbilgin.com/uploads/letters"
+DOWNLOAD_BASE="https://gokbilgin.com/wp-content/uploads/letters"
 
 if [ ! -f "$TARGET" ]; then
     echo "Target file does not exist"
@@ -27,8 +27,8 @@ FILES_TRANSLATION=${FILES_ORIGINAL/"original.pdf"/"tercume.pdf"}
 LETTER_DIR=$(basename "$(pwd)")
 AUTHOR_DIR=$(basename "$(cd .. && pwd)")
 
-URLS_ORIGINAL=$(echo "${DOWNLOAD_BASE}/${AUTHOR_DIR}/${LETTER_DIR}/${FILES_ORIGINAL}" | sed 's/ /_/g')
-URLS_TRANSLATION=$(echo "${DOWNLOAD_BASE}/${AUTHOR_DIR}/${LETTER_DIR}/${FILES_TRANSLATION}" | sed 's/ /_/g')
+URLS_ORIGINAL=$(printf "${DOWNLOAD_BASE}/${AUTHOR_DIR}/${LETTER_DIR}/${FILES_ORIGINAL}" | node -p 'encodeURI(require("fs").readFileSync(0))' )
+URLS_TRANSLATION=$(printf "${DOWNLOAD_BASE}/${AUTHOR_DIR}/${LETTER_DIR}/${FILES_TRANSLATION}" | node -p 'encodeURI(require("fs").readFileSync(0))' )
 
 LETTER_DATE=$LETTER_DIR
 
