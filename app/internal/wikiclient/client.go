@@ -1,6 +1,7 @@
 package wikiclient
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -151,7 +152,30 @@ func (c *WikiClient) Logout() {
 	}
 }
 
-func (c *WikiClient) Edit(title string, text string) {
+type ErrorPayload struct {
+	Code string
+	Info string
+}
+
+type EditPayload struct {
+	ContentModel string
+	New          string `json:",omitempty"`
+	NewRevId     int
+	NewTimestamp string
+	NoChange     string `json:",omitempty"`
+	OldRevId     int
+	PageId       int
+	Result       string
+	Title        string
+	Watched      string `json:",omitempty"`
+}
+
+type EditResponse struct {
+	Edit  *EditPayload  `json:",omitempty"`
+	Error *ErrorPayload `json:",omitempty"`
+}
+
+func (c *WikiClient) Edit(title string, text string) error {
 	csrfToken := c.TokenQuery(Token.Csrf)
 
 	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
@@ -161,12 +185,18 @@ func (c *WikiClient) Edit(title string, text string) {
 		"token":  csrfToken,
 		"bot":    "true", // Mark edit as a bot edit
 		"format": "json",
-	}).Post(c.endpoint)
+	}).SetResult(EditResponse{}).Post(c.endpoint)
 
 	if err != nil {
 		spew.Dump(err)
-		os.Exit(1)
+		log.Fatalln("edit error")
 	}
 
-	spew.Dump(resp)
+	result := resp.Result().(*EditResponse)
+
+	if result.Error != nil {
+		return errors.New("edit error: " + result.Error.Info)
+	}
+
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/author"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/letter"
@@ -11,6 +12,8 @@ import (
 	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/wikiclient"
 	"github.com/joho/godotenv"
 )
+
+const BatchSize = 10
 
 func main() {
 	input := os.Args[1]
@@ -44,9 +47,42 @@ func main() {
 
 	pages := page.CreatePages(authors)
 
-	for _, page := range pages {
-		client.Edit(page.Title, page.Text)
+	log.Printf("Processing %d page(s)\n", len(pages))
+
+	var wg sync.WaitGroup
+	inputQueue := make(chan *page.Page)
+
+	go func() {
+		defer close(inputQueue)
+		for _, page := range pages {
+			inputQueue <- page
+		}
+	}()
+
+	for i := 0; i < BatchSize; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for page := range inputQueue {
+				retry := 0
+				for {
+					err = client.Edit(page.Title, page.Text)
+					if err != nil {
+						log.Println(err)
+						if retry >= 3 {
+							log.Fatalf("Unable to process: +%v\n", page)
+						} else {
+							retry += 1
+						}
+					} else {
+						break
+					}
+				}
+			}
+		}()
 	}
+
+	wg.Wait()
 }
 
 func loadEnv() (string, string, string) {
