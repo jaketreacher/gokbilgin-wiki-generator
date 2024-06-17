@@ -57,7 +57,7 @@ func createCorrespondencePage(authorPageMap map[*author.Author]*Page) *Page {
 	}
 	sort.Slice(authors, func(i, j int) bool {
 		collator := collate.New(language.Turkish)
-		return collator.CompareString(authors[i].SortKey, authors[j].SortKey) < 0
+		return collator.CompareString(authors[i].Name, authors[j].Name) < 0
 	})
 
 	var authorLinks []string
@@ -75,7 +75,7 @@ func createCorrespondencePage(authorPageMap map[*author.Author]*Page) *Page {
 }
 
 func createAuthorPage(author *author.Author, letterPageMap map[*letter.Letter]*Page) *Page {
-	title := fmt.Sprintf("M. Tayyib Gökbilgin'e %s Mektuplar", author.Ablative)
+	title := strings.Title(strings.ToLower(author.Name))
 
 	var letterSections []*LetterSection
 	for letter, page := range letterPageMap {
