@@ -157,17 +157,33 @@ type ErrorPayload struct {
 	Info string
 }
 
+/*
+If the request does not modify the page:
+  - `nochange` will be prsent as an empty string.
+
+If the request does result in a change, either:
+  - `new“ will be as an empty string; or
+  - `oldrevid` will be non-zero.
+
+Additionally, when a change occurs, the corresponding
+grouped fields will also be present.
+
+Changing the title will result in a new page being created as
+opposed to a revision. This is due to mediawiki treating
+the title as an ID.
+*/
 type EditPayload struct {
 	ContentModel string
-	New          string `json:",omitempty"`
-	NewRevId     int
-	NewTimestamp string
-	NoChange     string `json:",omitempty"`
-	OldRevId     int
 	PageId       int
 	Result       string
 	Title        string
-	Watched      string `json:",omitempty"`
+
+	New          *string `json:",omitempty"`
+	OldRevId     *int    `json:",omitempty"`
+	NewRevId     *int    `json:",omitempty"`
+	NewTimestamp *string `json:",omitempty"`
+
+	NoChange *string `json:",omitempty"`
 }
 
 type EditResponse struct {
@@ -175,7 +191,7 @@ type EditResponse struct {
 	Error *ErrorPayload `json:",omitempty"`
 }
 
-func (c *WikiClient) Edit(title string, text string) error {
+func (c *WikiClient) Edit(title string, text string) (*EditResponse, error) {
 	csrfToken := c.TokenQuery(Token.Csrf)
 
 	resp, err := c.client.R().SetCookies(c.auth).SetFormData(map[string]string{
@@ -188,15 +204,14 @@ func (c *WikiClient) Edit(title string, text string) error {
 	}).SetResult(EditResponse{}).Post(c.endpoint)
 
 	if err != nil {
-		spew.Dump(err)
-		log.Fatalln("edit error")
+		return nil, fmt.Errorf("error making edit request: %w", err)
 	}
 
 	result := resp.Result().(*EditResponse)
 
 	if result.Error != nil {
-		return errors.New("edit error: " + result.Error.Info)
+		return nil, fmt.Errorf("error in edit response: %w", errors.New(result.Error.Info))
 	}
 
-	return nil
+	return result, nil
 }

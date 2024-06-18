@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/avast/retry-go"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/author"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/letter"
 	"github.com/jaketreacher/gokbilgin-wiki-generator/internal/page"
@@ -64,19 +65,18 @@ func main() {
 		go func() {
 			defer wg.Done()
 			for page := range inputQueue {
-				retry := 0
-				for {
-					err = client.Edit(page.Title, page.Text)
+				err := retry.Do(func() error {
+					result, err := client.Edit(page.Title, page.Text)
+
 					if err != nil {
-						log.Println(err)
-						if retry >= 3 {
-							log.Fatalf("Unable to process: +%v\n", page)
-						} else {
-							retry += 1
-						}
-					} else {
-						break
+						return err
 					}
+
+					log.Printf("Page processed: %s", result.Edit.Title)
+					return nil
+				})
+				if err != nil {
+					log.Println(err)
 				}
 			}
 		}()
